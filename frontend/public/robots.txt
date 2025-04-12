@@ -1,0 +1,24 @@
+# robots.txt for TerpNotes
+# Let all search engines crawl the site, but block some directories for privacy.
+
+User-agent: *
+Disallow: /login/
+
+Sitemap: https://www.terpnotes.tech/sitemap.xml
+
+#     ___           ___
+#    /  /\         /  /\  
+#   /  /  \       /  /  \ 
+#  /  /    \     /  /    \
+# /  /      \   /  /      \
+# \  \      /   \  \      /
+#  \  \    /     \  \    /
+#   \  \  /       \  \  /
+#    \  \/         \  \/ 
+#
+#                   ___ 
+#                 /    /\\
+#                /____/  \\
+#               |     |    |
+#               |_____|    |
+#

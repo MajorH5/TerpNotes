@@ -1,0 +1,51 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # Trigger on push to main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          sudo -i <<'INNER_EOF'
+            set -e
+
+            rm -rf /home/ubuntu/terpnotes
+            mkdir -p /home/ubuntu/terpnotes
+
+            # Ensure GitHub is in known_hosts
+            mkdir -p ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+            # Clone the repositories
+            git clone git@github.com:Lin-Jacob/TerpNotesFE.git /home/ubuntu/terpnotes/frontend
+            git clone git@github.com:olaniyisalami/TerpNotesBE.git /home/ubuntu/terpnotes/backend
+
+            # Navigate to the frontend and build it
+            cd /home/ubuntu/terpnotes/frontend
+            npm install --legacy-peer-deps
+            npm run build
+
+            # Navigate to the backend and set up
+            cd /home/ubuntu/terpnotes/backend
+            pip install -r requirements.txt
+
+            # Run backend
+            pkill -f app.py || true
+            nohup python3 app.py > /home/ubuntu/terpnotes/backend/backend.log 2>&1 &
+          INNER_EOF
+        EOF

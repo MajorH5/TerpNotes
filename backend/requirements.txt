@@ -1,0 +1,9 @@
+flask
+pillow
+boto3
+pymongo
+flask-cors
+opencv-python
+google-generativeai
+firebase-admin
+certifi
