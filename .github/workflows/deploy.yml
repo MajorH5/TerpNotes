@@ -25,14 +25,14 @@ jobs:
             set -e
 
             rm -rf /home/ubuntu/terpnotes
-            mkdir -p /home/ubuntu/terpnotes
-
+            cd /home/ubuntu
+            
             # Ensure GitHub is in known_hosts
             mkdir -p ~/.ssh
             ssh-keyscan github.com >> ~/.ssh/known_hosts
 
             # Clone the repositories
-            git clone git@github.com:MajorH5/TerpNotes.git /home/ubuntu/terpnotes/
+            git clone git@github.com:MajorH5/TerpNotes.git terpnotes
 
             # Navigate to the frontend and build it
             cd /home/ubuntu/terpnotes/frontend
