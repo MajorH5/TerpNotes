@@ -32,8 +32,7 @@ jobs:
             ssh-keyscan github.com >> ~/.ssh/known_hosts
 
             # Clone the repositories
-            git clone git@github.com:Lin-Jacob/TerpNotesFE.git /home/ubuntu/terpnotes/frontend
-            git clone git@github.com:olaniyisalami/TerpNotesBE.git /home/ubuntu/terpnotes/backend
+            git clone git@github.com:MajorH5/TerpNotes.git /home/ubuntu/terpnotes/
 
             # Navigate to the frontend and build it
             cd /home/ubuntu/terpnotes/frontend
