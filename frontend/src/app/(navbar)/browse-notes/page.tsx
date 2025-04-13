@@ -229,14 +229,14 @@ export default function BrowseNotes() {
                                 onSelect={() => void 0}
                                 resultLimit={500}
                                 onChange={(results, text) => {
-                                    if (text.length === 0) {
-                                        setVisibleCourses(courses);
-                                    } else {
-                                        const matches = courses.filter((course) =>
-                                            results.includes(course.course)
-                                        );
-                                        setVisibleCourses(matches);
-                                    }
+                                    // if (text.length === 0) {
+                                    //     setVisibleCourses(courses);
+                                    // } else {
+                                    //     const matches = courses.filter((course) =>
+                                    //         results.includes(course.course)
+                                    //     );
+                                    //     setVisibleCourses(matches);
+                                    // }
                                 }}
 
                             />

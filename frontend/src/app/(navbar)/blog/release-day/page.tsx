@@ -1,34 +1,27 @@
 import Link from "next/link"
 import "../blog-styles.css"
 
-
 export default function ReleaseDayBlog() {
     return (
         <div className="blog-container bg-[#F9F1E5] py-20 px-6">
-            {/* Main Container */}
             <div className="max-w-4xl mx-auto text-[#1F1F1F] space-y-2">
 
-                {/* Back Link */}
                 <div className="text-[#CD1015] text-md font-semibold">
                     <a href="/" className="hover:underline">⟵ Back to Home</a>
                 </div>
 
-                {/* Blog Title */}
                 <h1 className="text-4xl font-extrabold mb-6 text-[#1F1F1F]" style={{ fontFamily: "sen" }}>
                     🎉 TerpNotes Launches: A New Way to Study and Share Notes!
                 </h1>
 
-                {/* Author and Date */}
                 <div className="flex items-center gap text-[#333] text-md opacity-70">
                     <span>By: TerpNotes Team</span>
                     <span className="text-[#1F1F1F] text-xl mx-2">•</span>
                     <span>April 12, 2025</span>
                 </div>
 
-                {/* Blog Content */}
                 <div className="text-xl text-[#1F1F1F] space-y-6">
 
-                    {/* Introduction */}
                     <section>
                         <h3 className="text-2xl font-semibold mb-4">Introduction</h3>
                         <p className="text-md text-justify indent-12">
@@ -36,7 +29,6 @@ export default function ReleaseDayBlog() {
                         </p>
                     </section>
 
-                    {/* Story Section */}
                     <section>
                         <h3 className="text-2xl font-semibold mb-4">Our Story</h3>
                         <p className="text-md text-justify indent-12">
@@ -44,7 +36,6 @@ export default function ReleaseDayBlog() {
                         </p>
                     </section>
 
-                    {/* Features of TerpNotes */}
                     <section>
                         <h3 className="text-2xl font-semibold mb-4">What’s New in Version 1.0?</h3>
                         <p className="text-md text-justify indent-12">
@@ -52,7 +43,6 @@ export default function ReleaseDayBlog() {
                         </p>
                     </section>
 
-                    {/* Future Vision */}
                     <section>
                         <h3 className="text-2xl font-semibold mb-4">The Future of TerpNotes</h3>
                         <p className="text-md text-justify indent-12">
@@ -60,12 +50,11 @@ export default function ReleaseDayBlog() {
                         </p>
                     </section>
 
-                    {/* Call to Action */}
                     <section className="mt-12 text-center">
                         <p className="text-2xl font-semibold text-[#CD1015] mb-4">
                             Ready to get started? Join the TerpNotes community today!
                         </p>
-                        <Link href="/signup">
+                        <Link href="/login">
                             <button className="cursor-pointer bg-[#CD1015] hover:bg-[#a60d11] text-white px-6 py-3 rounded-xl border hover:scale-105 transition-all">
                                 Sign Up Now
                             </button>

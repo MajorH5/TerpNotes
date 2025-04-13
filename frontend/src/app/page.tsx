@@ -16,6 +16,7 @@ import Lightbulb from "@/../public/assets/images/decorations/lightbulb.svg"
 import PieChart from "@/../public/assets/images/decorations/pie_chart.svg"
 
 import UMDLogo from "@/../public/assets/images/umd_logo.png"
+import BitCamp from "@/../public/assets/images/bitcamp_logo.png"
 
 import HeroImage1 from "@/../public/assets/images/hero_image_1.png"
 import HeroImage2 from "@/../public/assets/images/hero_image_2.png"
@@ -261,15 +262,32 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <Link target="_blank" href="https://www.umd.edu/">
-          <Image
-            className="mt-10"
-            src={UMDLogo}
-            alt="University of Maryland Logo"
-            width={150}
-            height={50}
-          />
-        </Link>
+        <div className="text-center mt-12">
+          <p className="text-sm text-[#555] mb-3">Built for</p>
+
+          <div className="flex flex-row items-center justify-center gap-3">
+            <Link target="_blank" href="https://www.umd.edu/">
+              <Image
+                src={UMDLogo}
+                alt="University of Maryland Logo"
+                width={150}
+                height={50}
+                className="mx-auto"
+              />
+            </Link>
+            <span className="text-[#999] text-lg">•</span>
+            <Link target="_blank" href="https://bit.camp/">
+              <Image
+                src={BitCamp}
+                alt="Bitcamp Logo"
+                width={150}
+                height={50}
+                className="mx-auto"
+              />
+            </Link>
+          </div>
+        </div>
+
       </section>
 
       <section className="bg-[#F9F1E5] py-10 flex flex-col items-center text-center border border-gray">

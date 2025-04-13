@@ -77,7 +77,7 @@ export default function UploadNote() {
     });
     return () => unsubscribe();
   }, [router]);
-  
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F9F1E5]">
@@ -106,29 +106,45 @@ export default function UploadNote() {
           className="bg-[#fff9f1] border border-[#e0d7cb] rounded-2xl shadow-md p-8 text-left space-y-6"
         >
           <div>
-            <label className="block font-semibold text-[#1F1F1F] mb-2">Title</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="font-semibold text-[#1F1F1F]">Title</label>
+              <span className="text-xs text-[#888]">
+                {formData.title.length}/100
+              </span>
+            </div>
             <input
               name="title"
               type="text"
               value={formData.title}
               onChange={handleChange}
               required
+              minLength={4}
+              maxLength={100}
               className="w-full border border-[#e0d7cb] px-4 py-2 rounded-xl bg-white text-[#1F1F1F] focus:outline-none focus:ring-2 focus:ring-[#CD1015]"
             />
           </div>
 
+
           <div>
-            <label className="block font-semibold text-[#1F1F1F] mb-2">Topic</label>
+            <div className="flex justify-between items-center mb-1">
+              <label className="font-semibold text-[#1F1F1F]">Topic</label>
+              <span className="text-xs text-[#888]">
+                {formData.topic.length}/100
+              </span>
+            </div>
             <input
               name="topic"
               type="text"
               value={formData.topic}
               onChange={handleChange}
               required
+              minLength={4}
+              maxLength={100}
               placeholder="e.g., Midterm Review"
               className="w-full border border-[#e0d7cb] px-4 py-2 rounded-xl bg-white text-[#1F1F1F] focus:outline-none focus:ring-2 focus:ring-[#CD1015]"
             />
           </div>
+
 
 
           <div>

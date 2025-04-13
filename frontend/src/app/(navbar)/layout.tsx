@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { User, getAuth, onAuthStateChanged } from "firebase/auth";
 import { app } from "@/lib/firebase";
 import { useState, useEffect } from "react";
+import { FiUpload } from "react-icons/fi";
 
 export default function BrowseLayout({
     children,
@@ -62,9 +63,17 @@ export default function BrowseLayout({
 
                                     <Link href="/upload-note">
                                         <button className="bg-[#CD1015] text-white px-5 py-2 rounded-xl hover:bg-[#a60d11] transition-all shadow-md whitespace-nowrap">
-                                            + Upload Note
+                                            <FiUpload className="text-white" size={20} />
                                         </button>
                                     </Link>
+
+                                    {pathname !== "/browse-notes" &&
+                                        <Link href="/browse-notes" passHref>
+                                            <button className="bg-transparent hover:bg-[#CD1015] text-[#CD1015] border hover:text-white px-5 py-2 rounded-xl border-[#CD1015] transition-all">
+                                                Browse Notes
+                                            </button>
+                                        </Link>
+                                    }
 
                                     <button
                                         onClick={() => getAuth(app).signOut()}
