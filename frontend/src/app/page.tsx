@@ -17,6 +17,9 @@ import PieChart from "@/../public/assets/images/decorations/pie_chart.svg"
 
 import UMDLogo from "@/../public/assets/images/umd_logo.png"
 
+import HeroImage1 from "@/../public/assets/images/hero_image_1.png"
+import HeroImage2 from "@/../public/assets/images/hero_image_2.png"
+
 import { useState, useEffect } from "react"
 import { User, getAuth, onAuthStateChanged } from "firebase/auth";
 import { app } from "@/lib/firebase";
@@ -25,12 +28,12 @@ const slides = [
   {
     title: "Discover Quality Notes",
     description: "Browse top-rated notes across hundreds of UMD courses. All content is student-created and curated for clarity and usefulness.",
-    graphic: "",
+    graphic: HeroImage1,
   },
   {
     title: "Easily Share Your Notes",
     description: "Help your fellow Terps by uploading your class notes. Gain recognition and contribute to the UMD community effortlessly.",
-    graphic: "",
+    graphic: HeroImage2,
   },
   {
     title: "Organize Your Study Life",
@@ -345,9 +348,11 @@ export default function Home() {
           </div>
 
           <div className="mt-12">
-            <button className="bg-[#CD1015] hover:bg-[#a60d11] text-white px-6 py-3 rounded-xl border hover:scale-105 transition-all">
-              Browse All Notes
-            </button>
+            <Link href="/browse-notes">
+              <button className="bg-[#CD1015] hover:bg-[#a60d11] text-white px-6 py-3 rounded-xl border hover:scale-105 transition-all">
+                Browse All Notes
+              </button>
+            </Link>
           </div>
         </div>
       </section>
@@ -383,7 +388,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex justify-center w-full lg:w-1/2">
+            <div className="flex justify-center w-full lg:w-1/2 shadow-sm">
               <Image
                 src={slides[activeIndex].graphic}
                 alt="Slide Graphic"
