@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useState, FormEvent } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FiUpload } from "react-icons/fi";
@@ -11,15 +11,22 @@ import Lightbulb from "@/../public/assets/images/decorations/lightbulb.svg";
 
 import SearchBar from "@/components/search-bar";
 
+interface FormData {
+  title: string;
+  topic: string;
+  course: string;
+  file: File | null;
+}
+
 export default function UploadNote() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     title: "",
     course: "",
     topic: "",
     file: null,
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -27,7 +34,7 @@ export default function UploadNote() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     alert("Note uploaded successfully!");
   };
@@ -112,7 +119,7 @@ export default function UploadNote() {
             <div className="relative border border-[#e0d7cb] rounded-xl bg-white px-4 py-3 flex items-center gap-4 hover:shadow-md transition-all">
               <FiUpload className="text-[#CD1015]" size={20} />
               <span className="text-[#1F1F1F] text-sm">
-                {formData.file ? formData.file.name : "No file selected"}
+                {formData.file !== null ? formData.file?.name : "No file selected"}
               </span>
               <input
                 type="file"
