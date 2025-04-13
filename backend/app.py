@@ -72,14 +72,22 @@ def run_gemini_ocr(img_bytes):
     with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as temp_file:
         temp_file.write(img_bytes.read())
         temp_path = temp_file.name
-        image =  Image.open(temp_path)
+        image = Image.open(temp_path)
+
+    # Run Gemini in isolation
+    try:
         response = client.models.generate_content(
-        model="gemini-2.0-flash",
-        contents=[image, "Transcribe the text from this image into a format readable by Katex (<Latex tex='sample text'>) and give result in markdown but escape into code block so it isn't parsed by my browser"]
+            model="gemini-2.0-flash",
+            contents=[
+                image,
+                "Transcribe the text from this image into a format readable by Katex (<Latex tex='sample text'>) and give result in markdown but escape into code block so it isn't parsed by my browser"
+            ]
         )
         text_output = response.candidates[0].content.parts[0].text
         return text_output
-
+    except Exception as e:
+        print("❌ Gemini OCR failed:", str(e))
+        return "OCR Failed"
 
 @database_api_v1.route('/notes/post', methods=['POST'])
 def upload_notes():
