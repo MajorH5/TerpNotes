@@ -315,6 +315,13 @@ def run_http():
     http_redirect.run(host='0.0.0.0', port=80)
 
 if __name__ == '__main__':
+    import atexit
+
+    def clean_shutdown():
+        print("🛑 Gracefully shutting down TerpNotes backend...")
+
+    atexit.register(clean_shutdown)
+
     if use_https:
         print("✅ HTTPS enabled. Starting HTTPS and HTTP redirect servers...")
 
@@ -325,9 +332,8 @@ if __name__ == '__main__':
         def run_http_redirect():
             http_redirect.run(host='0.0.0.0', port=80)
 
-        threading.Thread(target=run_https).start()
-        threading.Thread(target=run_http_redirect).start()
-
+        threading.Thread(target=run_https, daemon=True).start()
+        threading.Thread(target=run_http_redirect, daemon=True).start()
     else:
         print(f"⚠️ HTTPS disabled. Running server over HTTP only on port 80.")
         app.run(host='0.0.0.0', port=80)
