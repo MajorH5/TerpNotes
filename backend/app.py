@@ -15,7 +15,7 @@ import tempfile
 import ssl
 import threading
 import os
-
+from bson import ObjectId
 load_dotenv()
 
 # --- Config ---
@@ -176,6 +176,28 @@ def get_notes():
             "filters": {"user_uid": user_uid, "course_name": course_name},
             "sort": sort_order
         })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+@database_api_v1.route('/notes/delete', methods=['DELETE'])
+def delete_note():
+    try:
+        note_id = request.args.get('note_id')
+        firebase_uid = request.args.get('firebase_uid')
+
+        if not note_id or not firebase_uid:
+            return jsonify({'error': 'Missing note_id or firebase_uid'}), 400
+
+        result = notes_collection.delete_one({
+            "_id": ObjectId(note_id),
+            "firebase_uid": firebase_uid
+        })
+
+        if result.deleted_count == 0:
+            return jsonify({'error': 'Note not found or not authorized'}), 404
+
+        return jsonify({'message': 'Note deleted successfully'})
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
