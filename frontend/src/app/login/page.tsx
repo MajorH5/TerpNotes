@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -15,6 +15,7 @@ import Logo from "@/../public/assets/images/logo.svg";
 import { useRouter } from "next/navigation";
 import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
 import { updateProfile } from "firebase/auth";
+import Link from "next/link";
 
 export default function AuthPage() {
   const auth = getAuth(app);
@@ -25,6 +26,7 @@ export default function AuthPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const db = getFirestore(app);
+  const [loading, setLoading] = useState(true);
 
   const validatePassword = (password: string): string | null => {
     if (password.length < 8) return "Password must be at least 8 characters long.";
@@ -105,16 +107,37 @@ export default function AuthPage() {
     }
   };
 
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        router.push("/browse-notes");
+      } else {
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F9F1E5]">
+        <div className="w-12 h-12 border-4 border-[#CD1015] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-[#F9F1E5]">
       {/* Left Info Section */}
       <div className="hidden md:flex w-full lg:w-1/2 p-10 bg-[#F3E8D8] flex-col justify-center items-center space-y-6 gap-5">
-        <div className="flex items-center justify-center gap-6 mb-0 select-none">
-          <Image src={Logo} alt="TerpNotes Logo" width={64} height={64} />
-          <h1 className="text-6xl font-bold text-[#1F1F1F] font-sans tracking-tight">
-            TerpNotes
-          </h1>
-        </div>
+        <Link href="/">
+          <div className="flex items-center justify-center gap-6 mb-0 select-none">
+            <Image src={Logo} alt="TerpNotes Logo" width={64} height={64} />
+            <h1 className="text-6xl font-bold text-[#1F1F1F] font-sans tracking-tight">
+              TerpNotes
+            </h1>
+          </div>
+        </Link>
         <p className="text-3xl font-semibold text-[#1F1F1F] mb-0">Why TerpNotes?</p>
         <ul className="list-disc list-inside space-y-2 text-[#333] text-xl leading-relaxed">
           <li>Access peer-created notes anytime.</li>
@@ -126,10 +149,12 @@ export default function AuthPage() {
 
       {/* Right Login/Signup Section */}
       <div className="flex flex-col items-center justify-center w-full min-h-screen gap-3 p-10 lg:w-1/2">
-        <span className="flex items-center justify-center gap-4 text-4xl font-bold text-[#1F1F1F] font-sans md:hidden">
-          <Image src={Logo} alt="TerpNotes Logo" width={48} height={48} /> 
-          TerpNotes
-        </span>
+        <Link href="/">
+          <span className="flex items-center justify-center gap-4 text-4xl font-bold text-[#1F1F1F] font-sans md:hidden">
+            <Image src={Logo} alt="TerpNotes Logo" width={48} height={48} />
+            TerpNotes
+          </span>
+        </Link>
         <div className="w-full max-w-md p-6 space-y-6 bg-white shadow rounded-2xl">
           <h1 className="text-2xl font-semibold text-center">Welcome</h1>
           {error && <p className="text-sm text-center text-red-600">{error}</p>}

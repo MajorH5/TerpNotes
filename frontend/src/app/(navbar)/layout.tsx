@@ -41,11 +41,30 @@ export default function BrowseLayout({
                     <div className="items-center hidden gap-4 md:flex">
                         {/* Nav Buttons */}
                         <div className="items-center hidden gap-4 md:flex">
+
                             {user ? (
                                 <>
                                     <div className="text-gray-800 px-5 py-2 rounded-xl bg-[#dcd1c0]">
                                         Welcome, <b>{user.displayName || user.email}</b>!
                                     </div>
+
+                                    <Link href="/my-notes">
+                                        <button className="bg-white border border-[#CD1015] text-[#CD1015] px-5 py-2 rounded-xl hover:bg-[#CD1015] hover:text-white transition-all shadow-md whitespace-nowrap">
+                                            🎓 My Notes
+                                        </button>
+                                    </Link>
+
+                                    <Link href="/saved-notes">
+                                        <button className="bg-white border border-[#CD1015] text-[#CD1015] px-5 py-2 rounded-xl hover:bg-[#CD1015] hover:text-white transition-all shadow-md whitespace-nowrap">
+                                            📚 Saved Notes
+                                        </button>
+                                    </Link>
+
+                                    <Link href="/upload-note">
+                                        <button className="bg-[#CD1015] text-white px-5 py-2 rounded-xl hover:bg-[#a60d11] transition-all shadow-md whitespace-nowrap">
+                                            + Upload Note
+                                        </button>
+                                    </Link>
 
                                     <button
                                         onClick={() => getAuth(app).signOut()}

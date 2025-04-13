@@ -69,17 +69,19 @@ export default function Home() {
     <div className="overflow-x-hidden">
       <header className="fixed top-0 z-40 justify-center hidden w-full pt-6 select-none md:flex backdrop-blur-md">
         <nav className="w-full max-w-[80%] rounded-2xl border border-[#e0d7cb] bg-[#F9F1E5]/90 px-6 py-1 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <Image
-              src={Logo}
-              alt="TerpNotes Logo"
-              width={30}
-              height={30}
-            />
-            <h1 className="text-xl text-[#1F1F1F] font-bold">
-              TerpNotes
-            </h1>
-          </div>
+          <Link href="#">
+            <div className="flex items-center gap-4">
+              <Image
+                src={Logo}
+                alt="TerpNotes Logo"
+                width={30}
+                height={30}
+              />
+              <h1 className="text-xl text-[#1F1F1F] font-bold">
+                TerpNotes
+              </h1>
+            </div>
+          </Link>
           <div className="flex items-center gap-4">
             {user ? (
               <>

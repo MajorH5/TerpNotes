@@ -1,15 +1,20 @@
 "use client";
 
-import { ChangeEvent, useState, FormEvent } from "react";
+import { ChangeEvent, useState, FormEvent, useEffect } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FiUpload } from "react-icons/fi";
+
+import { app } from "@/lib/firebase";
+import { getAuth } from "firebase/auth"
 
 import Notebook from "@/../public/assets/images/decorations/notebook_drawing.svg";
 import Flower from "@/../public/assets/images/decorations/flower_drawing.svg";
 import Lightbulb from "@/../public/assets/images/decorations/lightbulb.svg";
 
 import SearchBar from "@/components/search-bar";
+import { setMaxListeners } from "events";
 
 interface FormData {
   title: string;
@@ -19,12 +24,14 @@ interface FormData {
 }
 
 export default function UploadNote() {
+  const auth = getAuth(app);
   const [formData, setFormData] = useState<FormData>({
     title: "",
     course: "",
     topic: "",
     file: null,
   });
+  const [loading, setLoading] = useState(true);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
@@ -57,6 +64,27 @@ export default function UploadNote() {
     "BIO120",
     "SPAN103",
   ];
+
+  const router = useRouter(); // Add this line inside the component
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user === null) {
+        router.push("/login");
+      } else {
+        setLoading(false);
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F9F1E5]">
+        <div className="w-12 h-12 border-4 border-[#CD1015] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-screen bg-[#F9F1E5] py-20 px-6 relative overflow-hidden">

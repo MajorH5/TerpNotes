@@ -3,13 +3,25 @@
 import { useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import Link from "next/link";
+import SearchBar from "@/components/search-bar";
+import { app } from "@/lib/firebase";
+import { getAuth } from "firebase/auth"
+interface Class {
+    course: string;
+    semester: string;
+    tags: string[];
+    professors: {
+        name: string;
+        notes: number;
+    }[];
+}
 
 export default function BrowseNotes() {
-    const [searchQuery, setSearchQuery] = useState("");
+    const auth = getAuth(app);
     const [filters, setFilters] = useState(["CMSC131", "Fall 2023"]);
     const [detailsOpen, setDetailsOpen] = useState(false);
 
-    const courses = [
+    const courses: Class[] = [
         {
             course: "CMSC131",
             semester: "Fall 2023",
@@ -165,29 +177,38 @@ export default function BrowseNotes() {
                     >
                         Search notes
                     </h1>
+                    <div className="flex justify-center gap-3 overflow-x-hidden mb-6 px-4 no-scrollbar">
+                        <Link href="/request-note">
+                            <button className="bg-white border border-[#CD1015] text-[#CD1015] px-5 py-2 rounded-xl hover:bg-[#CD1015] hover:text-white transition-all shadow-md whitespace-nowrap">
+                                📝 Request Notes
+                            </button>
+                        </Link>
 
-                    <div className="flex justify-end mb-6 px-4">
                         <Link href="/upload-note">
-                            <button className="bg-[#CD1015] text-white px-5 py-2 rounded-xl hover:bg-[#a60d11] transition-all shadow-md">
+                            <button className="bg-[#CD1015] text-white px-5 py-2 rounded-xl hover:bg-[#a60d11] transition-all shadow-md whitespace-nowrap">
                                 + Upload Note
+                            </button>
+                        </Link>
+
+                        <Link href="/top-notes">
+                            <button className="bg-white border border-[#CD1015] text-[#CD1015] px-5 py-2 rounded-xl hover:bg-[#CD1015] hover:text-white transition-all shadow-md whitespace-nowrap">
+                                🌟 Popular
                             </button>
                         </Link>
                     </div>
 
+
                     <div className={`z-20 bg-[#F9F1E5] ${detailsOpen ? "sticky top-0 pb-2" : ""}`}>
                         <div className="flex items-center gap-3 bg-white border border-[#e0d7cb] rounded-xl px-5 py-3 shadow-md mb-4">
-                            <FiSearch className="text-[#CD1015]" size={20} />
-                            <input
-                                type="text"
+                            <SearchBar
+                                items={courses.map(c => c.course)}
                                 placeholder="Search for courses, professors, topics..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full focus:outline-none bg-transparent text-[#1F1F1F]"
+                                onSelect={() => void 0}
                             />
                         </div>
 
                         <div className="flex flex-wrap gap-3 mb-4">
-                            {filters.map((filter, index) => (
+                            {/* {filters.map((filter, index) => (
                                 <span
                                     key={index}
                                     className="bg-[#CD1015] text-white px-4 py-1.5 rounded-full flex items-center gap-2 text-sm"
@@ -198,7 +219,7 @@ export default function BrowseNotes() {
                                         onClick={() => removeFilter(filter)}
                                     />
                                 </span>
-                            ))}
+                            ))} */}
                         </div>
                     </div>
 
