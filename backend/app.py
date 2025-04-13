@@ -183,21 +183,79 @@ def get_notes():
 @database_api_v1.route('/notes/delete', methods=['DELETE'])
 def delete_note():
     try:
-        note_id = request.args.get('note_id')
-        firebase_uid = request.args.get('firebase_uid')
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'error': 'Authorization token required'}), 401
 
-        if not note_id or not firebase_uid:
-            return jsonify({'error': 'Missing note_id or firebase_uid'}), 400
+        id_token = auth_header.replace("Bearer ", "")
+        user_uid = verify_token(id_token)
+        if not user_uid:
+            return jsonify({'error': 'Invalid token'}), 403
+
+        note_id = request.args.get('note_id')
+        if not note_id:
+            return jsonify({'error': 'Missing note_id'}), 400
 
         result = notes_collection.delete_one({
             "_id": ObjectId(note_id),
-            "firebase_uid": firebase_uid
+            "user_uid": user_uid
         })
 
         if result.deleted_count == 0:
             return jsonify({'error': 'Note not found or not authorized'}), 404
 
         return jsonify({'message': 'Note deleted successfully'})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@database_api_v1.route('/notes/mine', methods=['GET'])
+def get_my_notes():
+    try:
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'error': 'Authorization token required'}), 401
+
+        id_token = auth_header.replace("Bearer ", "")
+        user_uid = verify_token(id_token)
+        if not user_uid:
+            return jsonify({'error': 'Invalid token'}), 403
+
+        course_name = request.args.get('course_name')
+        professor_name = request.args.get('professor_name')
+        sort_order = request.args.get('sort', 'desc')
+        page = int(request.args.get('page', 1))
+        per_page = int(request.args.get('per_page', 10))
+
+        query = {"user_uid": user_uid}
+        if course_name:
+            query["course_name"] = course_name
+        if professor_name:
+            query["professor_name"] = professor_name
+
+        sort_dir = -1 if sort_order == "desc" else 1
+        cursor = notes_collection.find(query).sort("uploaded_at", sort_dir).skip((page - 1) * per_page).limit(per_page)
+
+        notes = []
+        for doc in cursor:
+            doc["_id"] = str(doc["_id"])
+            notes.append({
+                "user_uid": doc["user_uid"],
+                "course_name": doc["course_name"],
+                "professor_name": doc.get("professor_name", ""),
+                "image_id": doc["image_id"],
+                "s3_url": doc["s3_url"],
+                "ocr_markdown": doc.get("ocr_markdown", ""),
+                "uploaded_at": doc["uploaded_at"].isoformat()
+            })
+
+        return jsonify({
+            "notes": notes,
+            "page": page,
+            "per_page": per_page,
+            "filters": {"course_name": course_name, "professor_name": professor_name},
+            "sort": sort_order
+        })
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
