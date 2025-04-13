@@ -65,7 +65,7 @@ Follow these instructions to set up the project locally.
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/TerpNotes.git
+   git clone https://github.com/MajorH5/TerpNotes.git
    cd TerpNotes
    ```
 
@@ -80,7 +80,7 @@ Follow these instructions to set up the project locally.
 
    - Create a Firebase project.
    - Enable Firestore and Authentication.
-   - Add your Firebase configuration to `frontend/src/firebaseConfig.js`.
+   - Add your Firebase configuration to `frontend/src/lib/firebase-config.js`.
 
 4. Start the development server:
 
