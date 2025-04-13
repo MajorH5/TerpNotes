@@ -23,6 +23,7 @@ export default function MyNotes() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -62,13 +63,13 @@ export default function MyNotes() {
       alert("You must be logged in.");
       return;
     }
-  
+
     const confirm = window.confirm("Are you sure you want to delete this note?");
     if (!confirm) return;
-  
+
     try {
       const token = await user.getIdToken();
-  
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_HOSTNAME}/database/api/v1/notes/delete?note_id=${noteId}`,
         {
@@ -78,13 +79,13 @@ export default function MyNotes() {
           },
         }
       );
-  
+
       const json = await res.json();
-  
+
       if (!res.ok) {
         throw new Error(json.error || "Failed to delete note.");
       }
-  
+
       alert("Note deleted successfully.");
       fetchUserNotes(user); // ✅ re-fetch from the server
     } catch (err: any) {
@@ -92,7 +93,7 @@ export default function MyNotes() {
       alert(`Delete failed: ${err.message}`);
     }
   };
-  
+
 
 
   if (loading) {
@@ -126,12 +127,16 @@ export default function MyNotes() {
               >
                 <div>
                   <h2 className="text-xl font-semibold text-[#1F1F1F] mb-1">{note.professor_name || "Untitled Note"}</h2>
-                  <p className="text-sm text-[#555] mb-2">
-                    {note.course_name}
-                  </p>
-                  <p className="text-xs text-[#999]">
-                    Uploaded on {new Date(note.uploaded_at).toLocaleDateString()}
-                  </p>
+                  <p className="text-sm text-[#555] mb-2">{note.course_name}</p>
+                  <p className="text-xs text-[#999]">Uploaded on {new Date(note.uploaded_at).toLocaleDateString()}</p>
+
+                  {/* Image preview */}
+                  <img
+                    src={note.s3_url}
+                    alt="Uploaded note preview"
+                    className="mt-3 w-full h-40 object-cover rounded-lg cursor-pointer hover:opacity-80 transition"
+                    onClick={() => setSelectedImage(note.s3_url)}
+                  />
                 </div>
 
                 <div className="flex justify-between items-center mt-4">
@@ -145,7 +150,7 @@ export default function MyNotes() {
                   </Link>
 
                   <button
-                    onClick={() => handleDelete(note.note_id)} 
+                    onClick={() => handleDelete(note.note_id)}
                     className="text-[#CD1015] hover:text-[#a60d11] flex items-center gap-1"
                   >
                     <FiTrash2 /> Delete
@@ -153,9 +158,22 @@ export default function MyNotes() {
                 </div>
               </div>
             ))}
+
           </div>
         )}
       </div>
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50"
+          onClick={() => setSelectedImage(null)}
+        >
+          <img
+            src={selectedImage}
+            alt="Full preview"
+            className="max-w-[90%] max-h-[90%] rounded-xl border-4 border-white shadow-lg"
+          />
+        </div>
+      )}
     </section>
   );
 }

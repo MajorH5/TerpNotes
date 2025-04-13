@@ -16,141 +16,27 @@ interface Class {
     }[];
 }
 
+interface Note {
+    note_id: string;
+    user_uid: string;
+    course_name: string;
+    professor_name: string;
+    image_id: string;
+    s3_url: string;
+    ocr_markdown: string;
+    uploaded_at: string;
+}
+
 export default function BrowseNotes() {
     const auth = getAuth(app);
     const [filters, setFilters] = useState(["CMSC131", "Fall 2023"]);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [classes, setClasses] = useState<string[] | null>(null);
+    const [selectedNotes, setSelectedNotes] = useState<Note[]>([]);
+    const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
 
-    const courses = useMemo<Class[]>(() => [
-        {
-            course: "CMSC131",
-            semester: "Fall 2023",
-            tags: ["Introductory", "Java", "Project-based"],
-            professors: [
-                { name: "Dr. Lee", notes: 5 },
-                { name: "Prof. Smith", notes: 3 },
-            ],
-        },
-        {
-            course: "MATH140",
-            semester: "Spring 2024",
-            tags: ["Core", "Calculus", "Popular"],
-            professors: [{ name: "Dr. Johnson", notes: 4 }],
-        },
-        {
-            course: "CMSC131",
-            semester: "Fall 2023",
-            tags: ["Introductory", "Java", "Project-based"],
-            professors: [
-                { name: "Dr. Lee", notes: 5 },
-                { name: "Prof. Smith", notes: 3 },
-            ],
-        },
-        {
-            course: "MATH140",
-            semester: "Spring 2024",
-            tags: ["Core", "Calculus", "Popular"],
-            professors: [{ name: "Dr. Johnson", notes: 4 }],
-        },
-        {
-            course: "PHYS161",
-            semester: "Fall 2022",
-            tags: ["Physics", "Lab", "STEM"],
-            professors: [
-                { name: "Dr. Nguyen", notes: 6 },
-                { name: "Prof. Patel", notes: 2 },
-            ],
-        },
-        {
-            course: "ENGL101",
-            semester: "Spring 2023",
-            tags: ["Writing", "Core", "Essays"],
-            professors: [{ name: "Dr. Anderson", notes: 7 }],
-        },
-        {
-            course: "CMSC216",
-            semester: "Fall 2023",
-            tags: ["Systems", "C Programming", "Intermediate"],
-            professors: [
-                { name: "Dr. Kim", notes: 9 },
-                { name: "Prof. Rao", notes: 4 },
-            ],
-        },
-        {
-            course: "HIST200",
-            semester: "Spring 2024",
-            tags: ["History", "Essays", "Discussion"],
-            professors: [{ name: "Dr. Baker", notes: 5 }],
-        },
-        {
-            course: "ECON200",
-            semester: "Fall 2022",
-            tags: ["Economics", "Graphs", "Micro"],
-            professors: [{ name: "Prof. Williams", notes: 3 }],
-        },
-        {
-            course: "CHEM135",
-            semester: "Fall 2023",
-            tags: ["Chemistry", "STEM", "Lab"],
-            professors: [
-                { name: "Dr. Garcia", notes: 8 },
-                { name: "Dr. Young", notes: 2 },
-            ],
-        },
-        {
-            course: "ARTH200",
-            semester: "Spring 2024",
-            tags: ["Art", "History", "Visual"],
-            professors: [{ name: "Prof. Thompson", notes: 6 }],
-        },
-        {
-            course: "PSYC100",
-            semester: "Fall 2023",
-            tags: ["Psychology", "Intro", "Behavior"],
-            professors: [
-                { name: "Dr. Martinez", notes: 5 },
-                { name: "Dr. Taylor", notes: 1 },
-            ],
-        },
-        {
-            course: "CMSC351",
-            semester: "Spring 2024",
-            tags: ["Algorithms", "Theory", "Hard"],
-            professors: [
-                { name: "Dr. Chen", notes: 10 },
-                { name: "Prof. Singh", notes: 7 },
-            ],
-        },
-        {
-            course: "STAT400",
-            semester: "Fall 2022",
-            tags: ["Statistics", "Data", "Math"],
-            professors: [{ name: "Dr. Evans", notes: 4 }],
-        },
-        {
-            course: "GEOG202",
-            semester: "Spring 2023",
-            tags: ["Maps", "Geography", "Environment"],
-            professors: [{ name: "Prof. White", notes: 3 }],
-        },
-        {
-            course: "BIO120",
-            semester: "Fall 2023",
-            tags: ["Biology", "Cells", "Lab"],
-            professors: [
-                { name: "Dr. Perez", notes: 6 },
-                { name: "Dr. Wright", notes: 2 },
-            ],
-        },
-        {
-            course: "SPAN103",
-            semester: "Spring 2024",
-            tags: ["Language", "Spanish", "Beginner"],
-            professors: [{ name: "Prof. Hernandez", notes: 5 }],
-        },
-    ], []);
+    const [courses, setCourses] = useState<Class[]>([]);
 
     const [visibleCourses, setVisibleCourses] = useState<Class[]>(courses);
 
@@ -165,15 +51,59 @@ export default function BrowseNotes() {
     };
 
     useEffect(() => {
-        fetch("/output.json")
-            .then((res) => res.json())
-            .then((json) => {
-                setClasses(Object.keys(json));
-            })
-            .finally(() => {
+        const fetchCourses = async () => {
+            try {
+                const user = getAuth(app).currentUser;
+                if (!user) return;
+
+                const token = await user.getIdToken();
+
+                const res = await fetch(`${process.env.NEXT_PUBLIC_HOSTNAME}/database/api/v1/notes/get`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    console.error(data.error);
+                    return;
+                }
+
+                // Convert backend shape to your expected `Class[]`
+                const grouped: Record<string, Class> = {};
+
+                data.notes.forEach((note: any) => {
+                    const key = `${note.course_name}_${note.professor_name}_${note.uploaded_at}`;
+                    if (!grouped[key]) {
+                        grouped[key] = {
+                            course: note.course_name,
+                            semester: new Date(note.uploaded_at).getFullYear().toString(),
+                            tags: [],
+                            professors: [],
+                        };
+                    }
+
+                    grouped[key].professors.push({
+                        name: note.professor_name,
+                        notes: 1,
+                    });
+                });
+
+                const result = Object.values(grouped);
+                setCourses(result);
+                setVisibleCourses(result);
+            } catch (err) {
+                console.error("Failed to fetch notes:", err);
+            } finally {
                 setLoading(false);
-            })
+            }
+        };
+
+        fetchCourses();
     }, []);
+
 
     if (loading) {
         return (
@@ -230,16 +160,16 @@ export default function BrowseNotes() {
                                 resultLimit={500}
                                 onChange={(results, text) => {
                                     const matches = text.length === 0
-                                      ? courses
-                                      : courses.filter((course: Class) => results.includes(course.course));
-                                  
+                                        ? courses
+                                        : courses.filter((course: Class) => results.includes(course.course));
+
                                     setVisibleCourses((prev) => {
-                                      // prevent unnecessary state updates
-                                      if (JSON.stringify(prev) === JSON.stringify(matches)) return prev;
-                                      return matches;
+                                        // prevent unnecessary state updates
+                                        if (JSON.stringify(prev) === JSON.stringify(matches)) return prev;
+                                        return matches;
                                     });
-                                  }}
-                                  
+                                }}
+
                             />
 
                         </div>
@@ -305,7 +235,31 @@ export default function BrowseNotes() {
                                                 </div>
                                             </div>
                                             <button
-                                                onClick={() => setDetailsOpen(true)}
+                                                onClick={async () => {
+                                                    setDetailsOpen(true);
+                                                    setSelectedCourse(course.course);
+
+                                                    try {
+                                                        const user = auth.currentUser;
+                                                        if (!user) return;
+
+                                                        const token = await user.getIdToken();
+                                                        const res = await fetch(`${process.env.NEXT_PUBLIC_HOSTNAME}/database/api/v1/notes/get?course_name=${course.course}&page=1&per_page=50`, {
+                                                            headers: {
+                                                                Authorization: `Bearer ${token}`,
+                                                            },
+                                                        });
+
+                                                        const data = await res.json();
+                                                        if (res.ok) {
+                                                            setSelectedNotes(data.notes);
+                                                        } else {
+                                                            console.error("Error fetching notes:", data.error);
+                                                        }
+                                                    } catch (err) {
+                                                        console.error("Failed to fetch course notes:", err);
+                                                    }
+                                                }}
                                                 className="cursor-pointer bg-transparent hover:bg-[#CD1015] text-[#CD1015] border hover:text-white px-4 py-2 rounded-xl border-[#CD1015] transition-all whitespace-nowrap"
                                             >
                                                 View Notes
@@ -329,47 +283,46 @@ export default function BrowseNotes() {
                 >
                     <div className="h-full overflow-y-auto relative px-6 py-6 max-w-[80%] mx-auto">
                         <button
-                            onClick={() => setDetails(false)}
+                            onClick={() => setDetailsOpen(false)}
                             className="absolute top-4 right-4 text-[#CD1015] hover:text-[#a60d11]"
                         >
                             <FiX size={28} />
                         </button>
 
-                        <h2 className="text-2xl font-bold text-[#1F1F1F] mb-4">CMSC131 Notes</h2>
+                        <h2 className="text-2xl font-bold text-[#1F1F1F] mb-4">{selectedCourse} Notes</h2>
 
-                        <p className="text-sm text-[#555] mb-4">
-                            Shared by: <span className="font-semibold">Dr. Lee</span> | Fall 2023
-                        </p>
+                        {selectedNotes.length === 0 ? (
+                            <p className="text-[#555] text-sm">No notes found for this course.</p>
+                        ) : (
+                            <div className="space-y-6">
+                                {selectedNotes.map((note, idx) => (
+                                    <div key={idx} className="border border-[#e0d7cb] rounded-2xl bg-[#fff9f1] p-4 shadow-sm">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <p className="font-bold text-[#1F1F1F]">{note.professor_name || "Unknown Uploader"}</p>
+                                                <p className="text-sm text-[#555] mb-2">Uploaded {new Date(note.uploaded_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
 
-                        {/* Mock contents */}
-                        <div className="mb-6 space-y-4">
-                            <div className="bg-[#F9F1E5] p-4 rounded-xl border border-[#e0d7cb]">
-                                <p className="text-sm text-[#1F1F1F]">
-                                    <strong>OCR Preview:</strong> "In Java, all classes inherit from the Object class. This allows..."
-                                </p>
+                                        <p className="text-sm text-[#1F1F1F] whitespace-pre-wrap mb-3">
+                                            <strong>OCR:</strong> {note.ocr_markdown || "No OCR data."}
+                                        </p>
+
+                                        {note.s3_url && (
+                                            <a href={note.s3_url} target="_blank" rel="noopener noreferrer">
+                                                <img
+                                                    src={note.s3_url}
+                                                    alt="Note preview"
+                                                    className="rounded-lg border border-[#e0d7cb] shadow-md w-full max-h-64 object-contain transition hover:scale-105"
+                                                />
+                                            </a>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-
-                            <div className="bg-[#F3E8D8] p-4 rounded-xl border border-[#e0d7cb]">
-                                <p className="text-sm text-[#1F1F1F]">
-                                    <strong>Comments:</strong>
-                                </p>
-                                <ul className="pl-4 mt-2 list-disc text-sm text-[#333] space-y-1">
-                                    <li>Really helped me prep for exam 1!</li>
-                                    <li>Wish it had some diagrams.</li>
-                                </ul>
-                            </div>
-
-                            <div className="bg-[#F9F1E5] p-4 rounded-xl border border-[#e0d7cb]">
-                                <p className="text-sm text-[#1F1F1F]">
-                                    <strong>Attached Images:</strong> [Preview or thumbnails go here]
-                                </p>
-                            </div>
-                        </div>
-
-                        <button className="bg-[#CD1015] text-white px-6 py-3 rounded-xl hover:bg-[#a60d11] transition-all">
-                            Open Full Note
-                        </button>
+                        )}
                     </div>
+
                 </div>
             </div>
 
