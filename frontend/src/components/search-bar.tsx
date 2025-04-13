@@ -1,25 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 
 interface SearchBarProps {
   items: string[];
   placeholder?: string;
   onSelect: (item: string) => void;
+  resultLimit?: number;
+  onChange?: (results: string[], query: string) => void;
 }
 
 export default function SearchBar({
   items,
   placeholder = "Search...",
   onSelect,
+  resultLimit = 25,
+  onChange,
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  const filtered = items.filter((item) =>
-    item.toLowerCase().includes(query.toLowerCase())
-  );
+  useEffect(() => {
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 200);
+    return () => {
+      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    };
+  }, [query]);
+
+  const filtered = useMemo(() => {
+    if (!debouncedQuery) return [];
+    const q = debouncedQuery.toLowerCase();
+    return items
+      .filter((item) => item.toLowerCase().includes(q))
+      .slice(0, resultLimit);
+  }, [debouncedQuery, items, resultLimit]);
+
+  useEffect(() => {
+    if (onChange) {
+      onChange(filtered, query);
+    }
+  }, [filtered, onChange, query]);
 
   const clearSearch = () => {
     setQuery("");
@@ -52,19 +78,37 @@ export default function SearchBar({
 
       {isFocused && filtered.length > 0 && (
         <ul className="absolute left-0 right-0 mt-2 bg-white border border-[#e0d7cb] rounded-xl shadow-md z-20 max-h-64 overflow-y-auto">
-          {filtered.map((item, idx) => (
-            <li
-              key={idx}
-              className="px-5 py-3 hover:bg-[#F3E8D8] cursor-pointer text-[#1F1F1F] transition-all"
-              onClick={() => {
-                onSelect(item);
-                setQuery(item);
-                setIsFocused(false);
-              }}
-            >
-              {item}
-            </li>
-          ))}
+          {filtered.map((item, idx) => {
+            const matchIndex = item.toLowerCase().indexOf(debouncedQuery.toLowerCase());
+            const matchLength = debouncedQuery.length;
+
+            const beforeMatch = item.slice(0, matchIndex);
+            const matchText = item.slice(matchIndex, matchIndex + matchLength);
+            const afterMatch = item.slice(matchIndex + matchLength);
+
+            return (
+              <li
+                key={idx}
+                className="px-5 py-3 hover:bg-[#F3E8D8] cursor-pointer text-[#1F1F1F] transition-all"
+                onClick={() => {
+                  onSelect(item);
+                  setQuery(item);
+                  setIsFocused(false);
+                }}
+              >
+                {matchIndex >= 0 ? (
+                  <>
+                    {beforeMatch}
+                    <strong className="font-semibold">{matchText}</strong>
+                    {afterMatch}
+                  </>
+                ) : (
+                  item
+                )}
+              </li>
+            );
+          })}
+
         </ul>
       )}
     </div>

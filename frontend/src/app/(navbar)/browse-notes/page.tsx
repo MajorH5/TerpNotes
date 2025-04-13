@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import Link from "next/link";
 import SearchBar from "@/components/search-bar";
@@ -20,6 +20,8 @@ export default function BrowseNotes() {
     const auth = getAuth(app);
     const [filters, setFilters] = useState(["CMSC131", "Fall 2023"]);
     const [detailsOpen, setDetailsOpen] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [classes, setClasses] = useState<string[] | null>(null);
 
     const courses: Class[] = [
         {
@@ -150,6 +152,8 @@ export default function BrowseNotes() {
         },
     ];
 
+    const [visibleCourses, setVisibleCourses] = useState<Class[]>(courses);
+
     const removeFilter = (filter: string) =>
         setFilters(filters.filter((f) => f !== filter));
 
@@ -159,6 +163,25 @@ export default function BrowseNotes() {
             document.body.scrollTo({ top: 0 });
         }, 1000);
     };
+
+    useEffect(() => {
+        fetch("/output.json")
+            .then((res) => res.json())
+            .then((json) => {
+                setClasses(Object.keys(json));
+            })
+            .finally(() => {
+                setLoading(false);
+            })
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F9F1E5]">
+                <div className="w-12 h-12 border-4 border-[#CD1015] border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <section className={`min-h-screen bg-[#F9F1E5] px-4 sm:px-6 relative ${detailsOpen ? "py-20 sm:py-9" : "py-20"}`}>
@@ -201,10 +224,23 @@ export default function BrowseNotes() {
                     <div className={`z-20 bg-[#F9F1E5] ${detailsOpen ? "sticky top-0 pb-2" : ""}`}>
                         <div className="flex items-center gap-3 bg-white border border-[#e0d7cb] rounded-xl px-5 py-3 shadow-md mb-4">
                             <SearchBar
-                                items={courses.map(c => c.course)}
+                                items={classes !== null ? classes : []}
                                 placeholder="Search for courses, professors, topics..."
                                 onSelect={() => void 0}
+                                resultLimit={500}
+                                onChange={(results, text) => {
+                                    if (text.length === 0) {
+                                        setVisibleCourses(courses);
+                                    } else {
+                                        const matches = courses.filter((course) =>
+                                            results.includes(course.course)
+                                        );
+                                        setVisibleCourses(matches);
+                                    }
+                                }}
+
                             />
+
                         </div>
 
                         <div className="flex flex-wrap gap-3 mb-4">
@@ -225,7 +261,7 @@ export default function BrowseNotes() {
 
 
                     <div className={`grid grid-cols-1 gap-8 px-4 ${detailsOpen ? "sm:grid-cols-1" : "sm:grid-cols-2"}`}>
-                        {courses.map((course, idx) => (
+                        {visibleCourses.map((course, idx) => (
                             <div
                                 key={idx}
                                 className="bg-white border border-[#e0d7cb] rounded-2xl shadow p-6"
@@ -279,6 +315,12 @@ export default function BrowseNotes() {
                             </div>
                         ))}
                     </div>
+
+                    {visibleCourses.length === 0 && (
+                        <div className="px-4 text-center text-[#555] text-sm mt-8 opacity-70 transition-opacity duration-300">
+                            No results found. Try a different search.
+                        </div>
+                    )}
                 </div>
 
                 <div

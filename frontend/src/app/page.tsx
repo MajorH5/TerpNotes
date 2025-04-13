@@ -343,9 +343,11 @@ export default function Home() {
                 </div>
                 <div className="text-[#666] text-sm">⭐ {note.rating} rating</div>
                 <div className="flex items-end justify-end w-full mt-4">
-                  <button className="bg-transparent hover:bg-[#CD1015] text-[#CD1015] border hover:text-white px-5 py-2 rounded-xl border-[#CD1015]">
-                    View
-                  </button>
+                  <Link href="/browse-notes">
+                    <button className="bg-transparent hover:bg-[#CD1015] text-[#CD1015] border hover:text-white px-5 py-2 rounded-xl border-[#CD1015]">
+                      View
+                    </button>
+                  </Link>
                 </div>
               </div>
             ))}
