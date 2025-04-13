@@ -95,17 +95,16 @@ def upload_notes():
         post_data = request.form
         post_files = request.files
 
-        user_id = post_data.get('user_id')
         course_name = post_data.get('course_name')
         professor_name = post_data.get('professor_name')
         image_file = post_files['image']
 
-        if not all([user_id, course_name, professor_name, image_file]):
+        if not all([user_uid, course_name, professor_name, image_file]):
             return jsonify({'error': 'Missing fields in request'}), 400
 
         jpeg_image = convert_to_jpeg(image_file)
         image_id = str(uuid.uuid4())
-        filename = f"{user_id}_{image_id}.jpg"
+        filename = f"{user_uid}_{image_id}.jpg"
         s3_url = upload_to_s3(jpeg_image, filename)
 
         jpeg_image.seek(0)
@@ -114,7 +113,7 @@ def upload_notes():
         now = datetime.utcnow()
 
         notes_collection.insert_one({
-            "user_id": user_id,
+            "user_uid": user_uid,
             "course_name": course_name,
             "professor_name": professor_name,
             "image_id": image_id,
@@ -136,15 +135,21 @@ def upload_notes():
 @database_api_v1.route('/notes/get', methods=['GET'])
 def get_notes():
     try:
-        user_id = request.args.get('user_id')
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return jsonify({'error': 'Authorization token required'}), 401
+        id_token = auth_header.replace("Bearer ", "")
+        user_uid = verify_token(id_token)
+        if not user_uid:
+            return jsonify({'error': 'Invalid token'}), 403
         course_name = request.args.get('course_name')
         sort_order = request.args.get('sort', 'desc')
         page = int(request.args.get('page', 1))
         per_page = int(request.args.get('per_page', 10))
 
         query = {}
-        if user_id:
-            query["user_id"] = user_id
+        if user_uid:
+            query["user_uid"] = user_uid
         if course_name:
             query["course_name"] = course_name
 
@@ -155,7 +160,7 @@ def get_notes():
         for doc in cursor:
             doc["_id"] = str(doc["_id"])
             notes.append({
-                "user_id": doc["user_id"],
+                "user_uid": doc["user_uid"],
                 "course_name": doc["course_name"],
                 "professor_name": doc.get("professor_name", ""),
                 "image_id": doc["image_id"],
@@ -168,7 +173,7 @@ def get_notes():
             "notes": notes,
             "page": page,
             "per_page": per_page,
-            "filters": {"user_id": user_id, "course_name": course_name},
+            "filters": {"user_uid": user_uid, "course_name": course_name},
             "sort": sort_order
         })
 
