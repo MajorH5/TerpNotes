@@ -103,12 +103,16 @@ def upload_notes():
             return jsonify({'error': 'Missing fields in request'}), 400
 
         jpeg_image = convert_to_jpeg(image_file)
+        jpeg_bytes = jpeg_image.read()  # Read the image once as bytes
+
+        # Upload to S3
         image_id = str(uuid.uuid4())
         filename = f"{user_uid}_{image_id}.jpg"
-        s3_url = upload_to_s3(jpeg_image, filename)
+        s3_url = upload_to_s3(io.BytesIO(jpeg_bytes), filename)
 
-        jpeg_image.seek(0)
-        ocr_result = run_gemini_ocr(jpeg_image)
+        # Run OCR on fresh stream
+        ocr_result = run_gemini_ocr(io.BytesIO(jpeg_bytes))
+
 
         now = datetime.utcnow()
 
@@ -240,6 +244,7 @@ def get_my_notes():
         for doc in cursor:
             doc["_id"] = str(doc["_id"])
             notes.append({
+                "note_id": str(doc["_id"]),
                 "user_uid": doc["user_uid"],
                 "course_name": doc["course_name"],
                 "professor_name": doc.get("professor_name", ""),

@@ -8,11 +8,14 @@ import Link from "next/link";
 import { FiTrash2, FiExternalLink } from "react-icons/fi";
 
 interface Note {
-  id: string;
-  title: string;
-  course: string;
-  semester: string;
-  createdAt: string;
+  note_id: string;
+  user_uid: string;
+  course_name: string;
+  professor_name: string;
+  image_id: string;
+  s3_url: string;
+  ocr_markdown: string;
+  uploaded_at: string;
 }
 
 export default function MyNotes() {
@@ -20,48 +23,77 @@ export default function MyNotes() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [notes, setNotes] = useState<Note[]>([]);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (!user) {
         router.push("/login");
       } else {
-        setUserEmail(user.email || null);
-        fetchUserNotes(user.uid);
+        fetchUserNotes(user);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  const fetchUserNotes = async (uid: string) => {
-    // Replace this with real API call
-    const mockNotes: Note[] = [
-    //   {
-    //     id: "1",
-    //     title: "CMSC131 Midterm Review",
-    //     course: "CMSC131",
-    //     semester: "Fall 2023",
-    //     createdAt: "2024-03-01",
-    //   },
-    //   {
-    //     id: "2",
-    //     title: "MATH140 Derivatives Sheet",
-    //     course: "MATH140",
-    //     semester: "Spring 2024",
-    //     createdAt: "2024-03-20",
-    //   },
-    ];
+  const fetchUserNotes = async (user: any) => {
+    try {
+      const token = await user.getIdToken();
+      const res = await fetch(`${process.env.NEXT_PUBLIC_HOSTNAME}/database/api/v1/notes/mine?page=1&per_page=100`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-    setNotes(mockNotes); // swap with actual data from Firestore or API
-    setLoading(false);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+
+      setNotes(data.notes);
+    } catch (err) {
+      console.error("Failed to fetch notes:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (noteId: string) => {
-    // Add deletion logic here
-    alert(`Delete note with ID: ${noteId}`);
+  const handleDelete = async (noteId: string) => {
+    const user = auth.currentUser;
+    if (!user) {
+      alert("You must be logged in.");
+      return;
+    }
+  
+    const confirm = window.confirm("Are you sure you want to delete this note?");
+    if (!confirm) return;
+  
+    try {
+      const token = await user.getIdToken();
+  
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_HOSTNAME}/database/api/v1/notes/delete?note_id=${noteId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+  
+      const json = await res.json();
+  
+      if (!res.ok) {
+        throw new Error(json.error || "Failed to delete note.");
+      }
+  
+      alert("Note deleted successfully.");
+      fetchUserNotes(user); // ✅ re-fetch from the server
+    } catch (err: any) {
+      console.error(err);
+      alert(`Delete failed: ${err.message}`);
+    }
   };
+  
+
 
   if (loading) {
     return (
@@ -89,27 +121,31 @@ export default function MyNotes() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {notes.map((note) => (
               <div
-                key={note.id}
+                key={note.image_id}
                 className="bg-white border border-[#e0d7cb] rounded-2xl shadow p-5 flex flex-col justify-between"
               >
                 <div>
-                  <h2 className="text-xl font-semibold text-[#1F1F1F] mb-1">{note.title}</h2>
+                  <h2 className="text-xl font-semibold text-[#1F1F1F] mb-1">{note.professor_name || "Untitled Note"}</h2>
                   <p className="text-sm text-[#555] mb-2">
-                    {note.course} • {note.semester}
+                    {note.course_name}
                   </p>
-                  <p className="text-xs text-[#999]">Uploaded on {note.createdAt}</p>
+                  <p className="text-xs text-[#999]">
+                    Uploaded on {new Date(note.uploaded_at).toLocaleDateString()}
+                  </p>
                 </div>
 
                 <div className="flex justify-between items-center mt-4">
                   <Link
-                    href={`/notes/${note.id}`}
+                    href={note.s3_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm text-[#CD1015] hover:underline flex items-center gap-1"
                   >
                     View <FiExternalLink size={16} />
                   </Link>
 
                   <button
-                    onClick={() => handleDelete(note.id)}
+                    onClick={() => handleDelete(note.note_id)} 
                     className="text-[#CD1015] hover:text-[#a60d11] flex items-center gap-1"
                   >
                     <FiTrash2 /> Delete

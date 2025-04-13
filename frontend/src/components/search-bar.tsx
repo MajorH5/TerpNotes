@@ -5,6 +5,7 @@ import { FiSearch, FiX } from "react-icons/fi";
 
 interface SearchBarProps {
   items: string[];
+  disabled?: boolean;
   placeholder?: string;
   onSelect: (item: string) => void;
   resultLimit?: number;
@@ -17,6 +18,7 @@ export default function SearchBar({
   onSelect,
   resultLimit = 25,
   onChange,
+  disabled
 }: SearchBarProps) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -57,6 +59,7 @@ export default function SearchBar({
       <div className="flex items-center gap-3 bg-white border border-[#e0d7cb] rounded-xl px-5 py-3 shadow-md">
         <FiSearch className="text-[#CD1015]" size={20} />
         <input
+          disabled={disabled || false}
           type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
