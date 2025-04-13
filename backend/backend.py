@@ -27,7 +27,11 @@ def static_files(path):
     if os.path.isfile(file_path + '.html'):
         return send_from_directory(app.static_folder, path + '.html')
 
-    # Otherwise 404
+    # Otherwise serve custom 404 page if it exists
+    if os.path.isfile(os.path.join(app.static_folder, '404.html')):
+        return send_from_directory(app.static_folder, '404.html'), 404
+
+    # Fallback if 404.html isn't found
     return "404 Not Found", 404
 
 # HTTP to HTTPS redirect
