@@ -1,49 +1,25 @@
-# name: Deploy to EC2
+name: Deploy to EC2
 
-# on:
-#   push:
-#     branches:
-#       - main
+on:
+  push:
+    branches:
+      - main
 
-# jobs:
-#   deploy:
-#     runs-on: ubuntu-latest
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
 
-#     steps:
-#     - name: Checkout code
-#       uses: actions/checkout@v2
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-#     - name: Set up SSH
-#       uses: webfactory/ssh-agent@v0.5.3
-#       with:
-#         ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_PRIVATE_KEY }}
 
-#     - name: Deploy to EC2
-#       run: |
-#         ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
-#           set -e
-
-#           sudo rm -rf /home/ubuntu/terpnotes
-#           sudo mkdir -p /home/ubuntu/terpnotes
-#           sudo chown $USER:$USER /home/ubuntu/terpnotes
-
-#           # Add GitHub to known hosts
-#           mkdir -p ~/.ssh
-#           ssh-keyscan github.com >> ~/.ssh/known_hosts
-
-#           # Clone the repositories
-#           git clone git@github.com:MajorH5/TerpNotes.git /home/ubuntu/terpnotes
-
-#           # Build frontend
-#           cd /home/ubuntu/terpnotes/frontend
-#           npm install --legacy-peer-deps
-#           npm run build
-
-#           # Backend setup
-#           cd /home/ubuntu/terpnotes/backend
-#           pip install -r requirements.txt
-
-#           # Restart backend
-#           pkill -f app.py || true
-#           nohup python3 app.py > /home/ubuntu/terpnotes/backend/backend.log 2>&1 &
-#         EOF
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          terpsupdate
+        EOF
