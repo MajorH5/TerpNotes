@@ -19,6 +19,8 @@ import UMDLogo from "@/../public/assets/images/umd_logo.png"
 
 import HeroImage1 from "@/../public/assets/images/hero_image_1.png"
 import HeroImage2 from "@/../public/assets/images/hero_image_2.png"
+import HeroImage3 from "@/../public/assets/images/hero_image_3.png"
+import HeroImage4 from "@/../public/assets/images/hero_image_4.png"
 
 import { useState, useEffect } from "react"
 import { User, getAuth, onAuthStateChanged } from "firebase/auth";
@@ -28,22 +30,22 @@ const slides = [
   {
     title: "Discover Quality Notes",
     description: "Browse top-rated notes across hundreds of UMD courses. All content is student-created and curated for clarity and usefulness.",
-    graphic: HeroImage1,
+    graphic: HeroImage1
   },
   {
     title: "Easily Share Your Notes",
     description: "Help your fellow Terps by uploading your class notes. Gain recognition and contribute to the UMD community effortlessly.",
-    graphic: HeroImage2,
+    graphic: HeroImage2
   },
   {
     title: "Organize Your Study Life",
     description: "Keep all your favorite notes in one place, track what you’ve read, and build your own custom study library.",
-    graphic: "",
+    graphic: HeroImage3
   },
   {
     title: "Collaborate With Peers",
     description: "Follow classmates, comment on notes, and build study groups all within TerpNotes. Learning is better together.",
-    graphic: "",
+    graphic: HeroImage4
   },
 ];
 

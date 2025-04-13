@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
+import Link from "next/link";
 
 export default function BrowseNotes() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -164,6 +165,14 @@ export default function BrowseNotes() {
                     >
                         Search notes
                     </h1>
+
+                    <div className="flex justify-end mb-6 px-4">
+                        <Link href="/upload-note">
+                            <button className="bg-[#CD1015] text-white px-5 py-2 rounded-xl hover:bg-[#a60d11] transition-all shadow-md">
+                                + Upload Note
+                            </button>
+                        </Link>
+                    </div>
 
                     <div className={`z-20 bg-[#F9F1E5] ${detailsOpen ? "sticky top-0 pb-2" : ""}`}>
                         <div className="flex items-center gap-3 bg-white border border-[#e0d7cb] rounded-xl px-5 py-3 shadow-md mb-4">

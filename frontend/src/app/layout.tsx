@@ -10,7 +10,7 @@ import Image from "next/image"
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TerpNotes - All the Notes. None of the Stress",
+  title: "TerpNotes - All the Notes. None of the Stress.",
   description:
     "TerpNotes is a UMD-focused note-sharing and studying platform where students compile, rate, and explore notes across semesters. Build your perfect learning environment with searchable, LaTeX-transcribed content and interactive tools.",
 };
@@ -27,12 +27,14 @@ export default function RootLayout({
         <footer className="bg-[#F9F1E5] border-t border-[#e0d7cb] px-6 py-12">
           <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
 
-            <div className="flex items-center gap-3">
-              <Image src={Logo} alt="TerpNotes Logo" width={30} height={30} />
-              <span className="text-xl font-semibold text-[#1F1F1F]">
-                TerpNotes
-              </span>
-            </div>
+            <a href="/">
+              <div className="flex items-center gap-3">
+                <Image src={Logo} alt="TerpNotes Logo" width={30} height={30} />
+                <span className="text-xl font-semibold text-[#1F1F1F]">
+                  TerpNotes
+                </span>
+              </div>
+            </a>
 
             <div className="flex flex-wrap justify-center gap-6 text-[#333] text-sm font-medium">
               <a href="/terms-of-service" target="_blank" className="hover:text-[#CD1015] transition flex">
