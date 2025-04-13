@@ -42,9 +42,8 @@ This project was built during the University of Maryland's 2025 Bitcamp Hackatho
 ## Tech Stack
 
 - **Frontend**: React, Next.js
-- **Backend**: Firebase Firestore, Node.js
+- **Backend**: Firebase Firestore, Python, MongoDB
 - **Deployment**: AWS EC2
-- **Version Control**: GitHub
 - **CI/CD**: GitHub Actions
 
 ---
