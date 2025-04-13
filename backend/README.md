@@ -1,4 +1,4 @@
-# TerpNotesBE
+# TerpNotes - Backend
 Bitcamp 2025 Backend Repository
 
 Mongo db 
