@@ -6,6 +6,8 @@ import Link from "next/link";
 import Logo from "@/../public/assets/images/logo.svg";
 import { usePathname } from "next/navigation";
 
+import router from "next/router"
+
 import { User, getAuth, onAuthStateChanged } from "firebase/auth";
 import { app } from "@/lib/firebase";
 import { useState, useEffect } from "react";
@@ -20,13 +22,35 @@ export default function BrowseLayout({
 
     const [user, setUser] = useState<User | null>(null);
     const auth = getAuth(app);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
+            setLoading(false);
         });
-        return () => unsubscribe(); // Clean up listener
+        return () => unsubscribe();
     }, [auth]);
+
+    // useEffect(() => {
+    //     const unsubscribe = auth.onAuthStateChanged((user) => {
+    //       if (user === null) {
+    //         router.push("/login");
+    //       } else {
+    //       }
+    //     });
+    //     return () => unsubscribe();
+    //   }, [router]);
+    
+
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#F9F1E5]">
+                <div className="w-12 h-12 border-4 border-[#CD1015] border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <>

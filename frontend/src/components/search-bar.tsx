@@ -43,9 +43,9 @@ export default function SearchBar({
 
   useEffect(() => {
     if (onChange) {
-      onChange(filtered, query);
+      onChange(filtered, debouncedQuery);
     }
-  }, [filtered, onChange, query]);
+  }, [filtered, onChange, debouncedQuery]);  
 
   const clearSearch = () => {
     setQuery("");

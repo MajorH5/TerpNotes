@@ -31,7 +31,6 @@ export default function UploadNote() {
     topic: "",
     file: null,
   });
-  const [loading, setLoading] = useState(true);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
@@ -64,27 +63,6 @@ export default function UploadNote() {
     "BIO120",
     "SPAN103",
   ];
-
-  const router = useRouter(); // Add this line inside the component
-
-  useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user === null) {
-        router.push("/login");
-      } else {
-        setLoading(false);
-      }
-    });
-    return () => unsubscribe();
-  }, [router]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F9F1E5]">
-        <div className="w-12 h-12 border-4 border-[#CD1015] border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   return (
     <section className="min-h-screen bg-[#F9F1E5] py-20 px-6 relative overflow-hidden">
@@ -144,8 +122,6 @@ export default function UploadNote() {
               className="w-full border border-[#e0d7cb] px-4 py-2 rounded-xl bg-white text-[#1F1F1F] focus:outline-none focus:ring-2 focus:ring-[#CD1015]"
             />
           </div>
-
-
 
           <div>
             <label className="block font-semibold text-[#1F1F1F] mb-2">Course</label>

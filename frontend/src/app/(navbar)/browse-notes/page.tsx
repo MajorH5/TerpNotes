@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { FiSearch, FiX } from "react-icons/fi";
 import Link from "next/link";
 import SearchBar from "@/components/search-bar";
@@ -23,7 +23,7 @@ export default function BrowseNotes() {
     const [loading, setLoading] = useState(true);
     const [classes, setClasses] = useState<string[] | null>(null);
 
-    const courses: Class[] = [
+    const courses = useMemo<Class[]>(() => [
         {
             course: "CMSC131",
             semester: "Fall 2023",
@@ -150,7 +150,7 @@ export default function BrowseNotes() {
             tags: ["Language", "Spanish", "Beginner"],
             professors: [{ name: "Prof. Hernandez", notes: 5 }],
         },
-    ];
+    ], []);
 
     const [visibleCourses, setVisibleCourses] = useState<Class[]>(courses);
 
@@ -229,16 +229,17 @@ export default function BrowseNotes() {
                                 onSelect={() => void 0}
                                 resultLimit={500}
                                 onChange={(results, text) => {
-                                    // if (text.length === 0) {
-                                    //     setVisibleCourses(courses);
-                                    // } else {
-                                    //     const matches = courses.filter((course) =>
-                                    //         results.includes(course.course)
-                                    //     );
-                                    //     setVisibleCourses(matches);
-                                    // }
-                                }}
-
+                                    const matches = text.length === 0
+                                      ? courses
+                                      : courses.filter((course: Class) => results.includes(course.course));
+                                  
+                                    setVisibleCourses((prev) => {
+                                      // prevent unnecessary state updates
+                                      if (JSON.stringify(prev) === JSON.stringify(matches)) return prev;
+                                      return matches;
+                                    });
+                                  }}
+                                  
                             />
 
                         </div>
