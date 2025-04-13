@@ -4,6 +4,8 @@ boto3
 pymongo
 flask-cors
 opencv-python
-google-generativeai
+google-genai
+python-dotenv
 firebase-admin
 certifi
+flask

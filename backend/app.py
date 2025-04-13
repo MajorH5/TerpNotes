@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint, request, jsonify
+from flask import Flask, Blueprint, request, jsonify, send_from_directory, redirect
 from PIL import Image
 from pymongo import MongoClient
 from flask_cors import CORS
@@ -10,15 +10,25 @@ import firebase_admin
 from firebase_admin import credentials, auth as firebase_auth
 from google import genai
 from datetime import datetime
+from dotenv import load_dotenv
 import tempfile
+import ssl
+import threading
+import os
+
+load_dotenv()
 
 # --- Config ---
-app = Flask(__name__)
+app = Flask(__name__, static_folder='public')
 app.config["MONGO_URI"] = os.getenv("MONGO_URI")
 mongo_client = MongoClient(app.config["MONGO_URI"])
 db = mongo_client["Bitcamp2025"]
 notes_collection = db["notes"]
 
+private_key = os.getenv("HTTPS_PRIVATE_KEY_PATH")
+public_key = os.getenv("HTTPS_PUBLIC_KEY_PATH")
+
+use_https = private_key != None and public_key != None and os.path.exists(private_key) and os.path.exists(public_key)
 
 S3_BUCKET = os.getenv("S3_BUCKET_NAME")
 s3_client = boto3.client(
@@ -70,10 +80,6 @@ def run_gemini_ocr(img_bytes):
         text_output = response.candidates[0].content.parts[0].text
         return text_output
 
-# --- Routes ---
-@app.route('/')
-def hello():
-    return 'Hello, World! <a href="/database/api/v1/notes/get">Go to API</a>'
 
 @database_api_v1.route('/notes/post', methods=['POST'])
 def upload_notes():
@@ -172,5 +178,66 @@ def get_notes():
 # Register blueprint
 app.register_blueprint(database_api_v1)
 
+# Serve index.html on root
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
+
+# Serve other static files, handle extension-less routes
+@app.route('/<path:path>')
+def static_files(path):
+    file_path = os.path.join(app.static_folder, path)
+
+    # If it's a file that exists, serve it
+    if os.path.isfile(file_path):
+        return send_from_directory(app.static_folder, path)
+
+    # If it's a directory with index.html
+    if os.path.isdir(file_path) and os.path.isfile(os.path.join(file_path, 'index.html')):
+        return send_from_directory(file_path, 'index.html')
+
+    # Try adding .html
+    if os.path.isfile(file_path + '.html'):
+        return send_from_directory(app.static_folder, path + '.html')
+
+    # Otherwise serve custom 404 page if it exists
+    if os.path.isfile(os.path.join(app.static_folder, '404.html')):
+        return send_from_directory(app.static_folder, '404.html'), 404
+
+    # Fallback if 404.html isn't found
+    return "404 Not Found", 404
+
+
+# HTTP to HTTPS redirect
+http_redirect = Flask('redirect')
+
+if use_https:
+    @http_redirect.route('/', defaults={'path': ''})
+    @http_redirect.route('/<path:path>')
+    def redirect_to_https(path):
+        return redirect(f'https://{request.host}{request.full_path}', code=301)
+
+    def run_https():
+        context = ('/etc/ssl/web/terpnotes_tech.crt', '/etc/ssl/web/terpnotes_tech_private.key')
+        app.run(host='0.0.0.0', port=443, ssl_context=context)
+
+def run_http():
+    http_redirect.run(host='0.0.0.0', port=80)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    if use_https:
+        print("✅ HTTPS enabled. Starting HTTPS and HTTP redirect servers...")
+
+        def run_https():
+            context = (public_key, private_key)
+            app.run(host='0.0.0.0', port=443, ssl_context=context)
+
+        def run_http_redirect():
+            http_redirect.run(host='0.0.0.0', port=80)
+
+        threading.Thread(target=run_https).start()
+        threading.Thread(target=run_http_redirect).start()
+
+    else:
+        print(f"⚠️ HTTPS disabled. Running server over HTTP only on port 80.")
+        app.run(host='0.0.0.0', port=80)
